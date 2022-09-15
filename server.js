@@ -2,6 +2,7 @@ const mysql = require("mysql2");
 const inquirer = require("inquirer");
 const cTable = require("console.table");
 const express = require("express");
+const Connection = require("mysql2/typings/mysql/lib/Connection");
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -69,15 +70,65 @@ function viewAllEmployees() {
   });
 }
 
-// function addEmployee() {
-//   inquirer
-//     .prompt([
-//      { type: "input",
-//         name: "first_name", message: "What is your first name?" },
-//     {type: 'input', name: "last_name", message: "What is your last name?"}
-//     return
-//   ]);
-// }
+function addEmployee() {
+  inquirer
+    .prompt([
+     { 
+        type: "input",
+        name: "firstName", 
+        message: "What is your first name?" 
+    },
+    {
+        type: "input", 
+        name: "lastName", 
+        message: "What is your last name?"
+    }
+    .then((response) => {
+        const params = [response.firstName, response.lastName];
+        const sql = `SELECT role.id, role.title FROM role`;
+        connection.promise().query(sql, (err, data) => {
+            if (err) throw err;
+            const roles = data.map(({ id, title }) => ({name: title, value: id }));
+       
+          inquirer
+            .prompt([
+              {
+                type: "list",
+                name: "department",
+                message: "What is the employees role?",
+                choices: roles
+              },
+  ])
+        .then(roleChoice => {
+            const role = roleChoice.role;
+            params.push(role);
+            const sql = `SELECT * FROM employee`;
+            connection.promise().query(sql, (err, data) => {
+                if (err) throw err;
+                const managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + "" + last_name, value: id}));
+                inquirer.prompt([
+                    {
+                        type: "list",
+                        name: "manager",
+                        message: "Who is the employee's manager?",
+                        choices: managers
+                    }
+                ])
+                .then(managerChoice => {
+                    const manager = managerChoice.manager;
+                    params.push(manager);
+                    const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+                    connection.query(sql, params, (err, data) = {
+                        if (err) throw err;
+                        viewAllEmployees();
+                        mainQuestion();
+                    });
+                });
+            });
+        });
+        });
+});
+};
 
 function viewAllRoles() {
   db.query("SELECT * FROM role_position", function (err, results) {

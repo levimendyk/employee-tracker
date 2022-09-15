@@ -1,4 +1,4 @@
-const mysql2 = require("mysql2");
+const mysql = require("mysql2");
 const inquirer = require("inquirer");
 const cTable = require("console.table");
 const express = require("express");
@@ -9,7 +9,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const db = mysql2.createConnection({
+const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "rootroot",
@@ -56,6 +56,9 @@ function mainQuestion() {
       } else {
         db.end();
       }
+    })
+    .catch((err) => {
+      console.log(err);
     });
 }
 
@@ -84,60 +87,68 @@ function viewAllRoles() {
 }
 
 function addRole() {
-    inquirer
-        .prompt([
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "role",
+        message: "What is the name of the role?",
+        validate: (addRole) => {
+          if (addRole) {
+            return true;
+          } else {
+            console.log("Please enter the name of the role.");
+            return false;
+          }
+        },
+      },
+      {
+        type: "input",
+        name: "salary",
+        message: "What is the salary of the role?",
+        validate: (addSalary) => {
+          if (isNaN(addSalary)) {
+            console.log("Please enter the salary.");
+            return false;
+          } else {
+            return true;
+          }
+        },
+      },
+    ])
+    .then((response) => {
+      const params = [response.role, response.salary];
+      const sql = `SELECT department_name, id FROM department`;
+      db.query(sql, (err, data) => {
+        if (err) throw err;
+        const dept = data.map(({ department_name, id }) => ({
+          name: department_name,
+          value: id,
+        }));
+
+        inquirer
+          .prompt([
             {
-                type: "input",
-                name: "role", 
-                message: "What is the name of the role?",
-                validate: (addRole) => {
-                    if (addRole) {
-                        return true;
-                    } else {
-                        console.log("Please enter the name of the role.");
-                        return false;
-                    }
-                }
+              type: "list",
+              name: "department",
+              message: "Which department does the role belong to?",
+              choices: dept,
             },
-            {
-                type: "input",
-                name: "salary",
-                message: "What is the salary of the role?",
-               validate: (addSalary) => {
-                if (isNaN(addSalary)) {
-                    return true;
-                } else {
-                    console.log("Please enter the salary");
-                    return false;
-                }
-               }
-            },
-        // ])
-        // .then((response) => {
-        //     db.query("INSERT INTO")
-        // }) 
-            {
-                type: "list",
-                name: "department",
-                message: "Which department does the role belong to?",
-                choices: [viewAllDepartments()],
-            },
-        ])
-        // .then((response) => {
-        //     db.query(
-        //       "INSERT INTO role_position (title, salary, department)) VALUES(?)",
-        //       response.depName,
-        //       (err, rows) => {
-        //         if (err) throw err;
-        //         console.table(viewAllRoles());
-        //       }
-        //     );
-        //   })
-          .catch((err) => {
-            console.error(err);
+          ])
+          .then((deptChoice) => {
+            const dept = deptChoice.dept;
+            params.push(dept);
+            const sql = `INSERT INTO role_position (title, salary, department_id) VALUES (?, ?, ?)`;
+            db.query(sql, params, (err, result) => {
+              if (err) throw err;
+              console.log(response.role);
+              viewAllRoles();
+              mainQuestion();
+            });
           });
-      }
-        mainQuestion();
+      });
+    });
+}
 
 function viewAllDepartments() {
   db.query("SELECT * FROM department", function (err, results) {

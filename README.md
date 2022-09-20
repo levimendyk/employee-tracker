@@ -30,7 +30,7 @@ GIVEN a command-line application that accepts user input
 <li>THEN I am prompted to select an employee to update and their new role and this information is updated in the database</li>
 </ul>
 
-[Deployed Site](https://placeholder)
+[Tutorial Video](https://drive.google.com/file/d/1Ur0UQvlgTldEb8q1TTZqtEyHZ1AKqI54/view)
 
 Contribution guidelines for this project
 <img src="./assets/images/employee-capture1.png"/>

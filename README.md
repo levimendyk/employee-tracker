@@ -33,6 +33,7 @@ GIVEN a command-line application that accepts user input
 [Tutorial Video](https://drive.google.com/file/d/1Ur0UQvlgTldEb8q1TTZqtEyHZ1AKqI54/view)
 
 Contribution guidelines for this project
+
 <img src="./assets/images/employee-capture1.png"/>
 
 <img src="./assets/images/employee-capture2.png"/>

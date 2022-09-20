@@ -9,14 +9,14 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const connection = mysql.createConnection({
+const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "rootroot",
   database: "employees_db",
 });
 
-connection.connect(function (err) {
+db.connect(function (err) {
   if (err) throw err;
   console.log(`Connected to the employees_db database.`);
   mainQuestion();
@@ -54,7 +54,7 @@ function mainQuestion() {
       } else if (answer.mainQuestion === "Add Department") {
         addDepartment();
       } else {
-        connection.end();
+        db.end();
       }
     })
     .catch((err) => {
@@ -182,7 +182,7 @@ function addRole() {
           ])
           .then((deptChoice) => {
             const deptName = deptChoice.department;
-            console.log(deptName)
+            console.log(deptName);
             params.push(deptName);
             const sql = `INSERT INTO role_position (title, salary, department_id) VALUES (?, ?, ?)`;
             db.query(sql, params, (err, result) => {
@@ -209,8 +209,8 @@ function addDepartment() {
       {
         type: "input",
         name: "depName",
-        message: "What is the name of the department?"
-      }
+        message: "What is the name of the department?",
+      },
     ])
     .then((response) => {
       db.query(
